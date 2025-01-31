@@ -2,7 +2,11 @@
 import subprocess
 from datetime import datetime
 import os
+import sys              # added for sys.exit
+import logging          # added logging support
 
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
@@ -17,21 +21,20 @@ def write_number(num):
 
 def git_commit():
     # Stage the changes
-    subprocess.run(['git', 'add', 'number.txt'])
+    subprocess.run(['git', 'add', 'number.txt'], check=True)
     
     # Create commit with current date
     date = datetime.now().strftime('%Y-%m-%d')
     commit_message = f"Update number: {date}"
-    subprocess.run(['git', 'commit', '-m', commit_message])
+    subprocess.run(['git', 'commit', '-m', commit_message], check=True)
 
 def git_push():
     # Push the committed changes to GitHub
     result = subprocess.run(['git', 'push'], capture_output=True, text=True)
     if result.returncode == 0:
-        print("Changes pushed to GitHub successfully.")
+        logging.info("Changes pushed to GitHub successfully.")
     else:
-        print("Error pushing to GitHub:")
-        print(result.stderr)
+        logging.error("Error pushing to GitHub: %s", result.stderr)
 
 def main():
     try:
@@ -41,8 +44,8 @@ def main():
         git_commit()
         git_push()
     except Exception as e:
-        print(f"Error: {str(e)}")
-        exit(1)
+        logging.error("Error: %s", e)
+        sys.exit(1)
 
 if __name__ == "__main__":
-    main() 
+    main()
